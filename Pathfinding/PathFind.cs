@@ -21,6 +21,8 @@ namespace MatrixPathFind
     /// </summary>
     internal class PathFind
     {
+        public static bool Mark = true;
+
         /// <summary>
         /// 对一个矩阵地址进行寻路算法求解
         /// </summary>
@@ -32,11 +34,10 @@ namespace MatrixPathFind
 
             return GetMatrixPath(origin, new PointInt(0, 0), new PointInt(origin.Length - 1, origin[0].Length - 1), callback);
             //return GetMatrixPath(origin, new PointInt(0, 0), new PointInt(25, 75), callback);
-
         }
         public static byte[][] GetMatrixPath(byte[][] origin, PointInt loc, PointInt des, Action<byte[][]> callback)
         {
-            int wait = 10;
+            int wait = 100;
             if (callback == null)
             {
                 wait = 0;
@@ -95,8 +96,21 @@ namespace MatrixPathFind
                 }
                 else
                 {
+                    //检查当前点的四个方向是否有通路
+                    if (Checkff(buffer, next, max))
+                    {
+                        buffer[loc.X][loc.Y] = 4;
+                        DoCallback(callback, buffer, wait);
+
+                        buffer[loc.X][loc.Y] = 0;
+                        DoCallback(callback, buffer, wait);
+
+                        next = next.Parent;
+                        //如果有则表示出现闭塞回路
+                        goto endLab;
+                    } 
                     buffer[loc.X][loc.Y] = 4;
-                    DoCallback(callback, buffer, wait);
+                    DoCallback(callback, buffer, wait); 
                     next = next.YiledNext(status);
                     continue;
                 }
@@ -110,7 +124,7 @@ namespace MatrixPathFind
                 j = des.Y - loc.Y;
                 status = i >= j ? 1 : 2;
 
-
+                doYiledNext:
                 var n = next.YiledNext(status);
                 if (n == null)
                 {
@@ -119,6 +133,10 @@ namespace MatrixPathFind
                     next = next.Parent;
                     goto endLab;
                 }
+
+
+
+
                 next = n;
                 continue;
             }
@@ -128,6 +146,27 @@ namespace MatrixPathFind
             callback(buffer);
             System.Threading.Thread.Sleep(wait);
 
+        }
+
+        static bool Checkff(byte[][] buffer, SearchTree tree, PointInt max)
+        {
+            if (!Mark) return false;
+
+            int c = 0;
+            var em = tree.Yiled(0);
+            while (em.MoveNext())
+            {
+                var cur = em.Current;
+                var loc = cur.Curent;
+                if (!loc.Vaild(max)) continue;
+                if (buffer[loc.X][loc.Y] == 4)
+                {
+                    c++;
+                    if (c >= 2) return true;
+                } 
+            }
+
+            return false;
         }
 
         /// <summary>

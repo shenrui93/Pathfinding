@@ -18,7 +18,7 @@ namespace MatrixPathFind
         }
 
         byte[][] origin;
-        const int P = 100;
+        const int P = 20;
         bool isStop = true;
 
 
@@ -76,6 +76,11 @@ namespace MatrixPathFind
             pictureBox1.Image = map;
 
         }
+
+
+
+
+
         private void btn_Calc_Click(object sender, EventArgs e)
         {
             isStop = true;
@@ -89,6 +94,7 @@ namespace MatrixPathFind
         }
         private void button2_Click(object sender, EventArgs e)
         {
+            if (!isStop) return;
 
             isStop = false;
             System.Threading.ThreadPool.UnsafeQueueUserWorkItem(o =>
@@ -104,6 +110,8 @@ namespace MatrixPathFind
                             PrintDD(result);
                         });
                     });
+
+                    isStop = true;
                 }
                 catch (Exception)
                 {
@@ -149,6 +157,13 @@ namespace MatrixPathFind
         private void pictureBox1_MouseDown(object sender, MouseEventArgs e)
         {
 
+        }
+
+        private void button4_Click(object sender, EventArgs e)
+        {
+            PathFind.Mark = !PathFind.Mark;
+
+            button4.Text = PathFind.Mark ? "取消标记" : "标记";
         }
     }
 }

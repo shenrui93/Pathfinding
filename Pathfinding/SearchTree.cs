@@ -110,7 +110,7 @@ namespace MatrixPathFind
             this.Parent = null;
         }
 
-        IEnumerator<SearchTree> Yiled(int status)
+       public IEnumerator<SearchTree> Yiled(int status)
         {
             switch (status)
             {
