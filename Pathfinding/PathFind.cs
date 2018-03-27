@@ -29,7 +29,14 @@ namespace MatrixPathFind
 
         public static byte[][] GetMatrixPath(byte[][] origin, Action<byte[][]> callback)
         {
-            int wait = 100;
+
+            return GetMatrixPath(origin, new PointInt(0, 0), new PointInt(origin.Length - 1, origin[0].Length - 1), callback);
+            //return GetMatrixPath(origin, new PointInt(0, 0), new PointInt(25, 75), callback);
+
+        }
+        public static byte[][] GetMatrixPath(byte[][] origin, PointInt loc, PointInt des, Action<byte[][]> callback)
+        {
+            int wait = 10;
             if (callback == null)
             {
                 wait = 0;
@@ -37,8 +44,9 @@ namespace MatrixPathFind
             }
 
             var buffer = CopyData(origin);
+            var max = new PointInt(buffer.Length - 1, buffer[0].Length - 1);
 
-            if (!CalcPath(buffer, new PointInt(0, 0), new PointInt(buffer.Length - 1, buffer[0].Length - 1), callback, wait))
+            if (!CalcPath(buffer, loc, des, max, callback, wait))
             {
                 return buffer;
             }
@@ -46,7 +54,8 @@ namespace MatrixPathFind
             return buffer;
         }
 
-        private static bool CalcPath(byte[][] buffer, PointInt loc, PointInt des, Action<byte[][]> callback, int wait)
+
+        private static bool CalcPath(byte[][] buffer, PointInt loc, PointInt des, PointInt max, Action<byte[][]> callback, int wait)
         {
 
             var root = new SearchTree(loc, 0);
@@ -60,8 +69,8 @@ namespace MatrixPathFind
                 }
                 loc = next.Curent;
 
-                if (!loc.Vaild(des))
-                { 
+                if (!loc.Vaild(max))
+                {
                     //遇到墙壁，处理区域点忽略
 
                     next = next.Parent;
@@ -114,30 +123,11 @@ namespace MatrixPathFind
                 continue;
             }
         }
-
         static void DoCallback(Action<byte[][]> callback, byte[][] buffer, int wait)
         {
             callback(buffer);
             System.Threading.Thread.Sleep(wait);
 
-        }
-        private static bool Check(byte[][] buffer, PointInt loc, PointInt des, out PointInt p)
-        {
-            p = new PointInt(des.X - loc.X, des.Y - loc.Y);
-
-            if (!loc.Vaild(des)) return false;
-
-            int i = p.X;
-            int j = p.Y;
-            if (i == j && j == 0)
-            {
-                buffer[loc.X][loc.Y] = 4;
-                //到达终点寻址完毕
-                return true;
-            }
-            if (buffer[loc.X][loc.Y] != 0) return false;
-            buffer[loc.X][loc.Y] = 4;
-            return true;
         }
 
         /// <summary>

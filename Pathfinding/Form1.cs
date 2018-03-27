@@ -18,11 +18,13 @@ namespace MatrixPathFind
         }
 
         byte[][] origin;
-        const int P = 10;
+        const int P = 100;
+        bool isStop = true;
+
 
         private void button1_Click(object sender, EventArgs e)
         {
-
+            isStop = true;
             origin = new byte[P][];
             Random r = new Random();
 
@@ -32,7 +34,7 @@ namespace MatrixPathFind
 
                 for (int j = 0; j < P; j++)
                 {
-                    b[j] = (byte)(r.Next(0, 100) >= 65 ? 1 : 0);
+                    b[j] = (byte)(r.Next(0, 100) >= 70 ? 1 : 0);
                 }
                 origin[i] = b;
             }
@@ -76,16 +78,10 @@ namespace MatrixPathFind
         }
         private void btn_Calc_Click(object sender, EventArgs e)
         {
-            System.Threading.ThreadPool.UnsafeQueueUserWorkItem(o =>
-            {
-                PathFind.GetMatrixPath(origin, result =>
-                {
-                    this.Invoke(() =>
-                    {
-                        PrintDD(result);
-                    });
-                });
-            }, null);
+            isStop = true;
+
+            var result = PathFind.GetMatrixPath(origin, null);
+            PrintDD(result);
         }
         private void ShowBox(string msg)
         {
@@ -93,17 +89,40 @@ namespace MatrixPathFind
         }
         private void button2_Click(object sender, EventArgs e)
         {
-            var result = PathFind.GetMatrixPath(origin, null);
-            if (result == null)
+
+            isStop = false;
+            System.Threading.ThreadPool.UnsafeQueueUserWorkItem(o =>
             {
-                ShowBox("当前地图无解"); 
-                return;
-            }
-            else
-            {
-                PrintDD(origin);
-                ShowBox("当前地图有解");
-            }
+                try
+                {
+                    PathFind.GetMatrixPath(origin, result =>
+                    {
+                        if (isStop)
+                            System.Threading.Thread.CurrentThread.Abort();
+                        this.Invoke(() =>
+                        {
+                            PrintDD(result);
+                        });
+                    });
+                }
+                catch (Exception)
+                {
+                }
+            }, null);
+
+
+
+            //var result = PathFind.GetMatrixPath(origin, null);
+            //if (result == null)
+            //{
+            //    ShowBox("当前地图无解"); 
+            //    return;
+            //}
+            //else
+            //{
+            //    PrintDD(origin);
+            //    ShowBox("当前地图有解");
+            //}
 
         }
 
@@ -114,6 +133,22 @@ namespace MatrixPathFind
         public virtual void Invoke(Action callback)
         {
             base.Invoke(callback);
+        }
+
+        private void button3_Click(object sender, EventArgs e)
+        {
+            isStop = true;
+            PrintDD(origin);
+        }
+
+        private void Form1_Load(object sender, EventArgs e)
+        {
+
+        }
+
+        private void pictureBox1_MouseDown(object sender, MouseEventArgs e)
+        {
+
         }
     }
 }
