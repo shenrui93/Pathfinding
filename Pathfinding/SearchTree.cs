@@ -117,14 +117,14 @@ namespace MatrixPathFind
                 case 1:
                     yield return Right;
                     yield return Down;
-                    yield return Up;
                     yield return Left;
+                    yield return Up;
                     break;
                 case 2:
                     yield return Down;
                     yield return Right;
-                    yield return Left;
                     yield return Up;
+                    yield return Left;
                     break;
                 default:
                     yield return Right;
